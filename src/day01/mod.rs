@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use std::{io::{BufRead, BufReader}, fs::File};
+    use std::{io::{BufRead, BufReader}, fs::File, cmp::Reverse};
+    use itertools::Itertools;
 
     #[derive(Eq, Debug, PartialEq)]
     struct Elf {
@@ -42,17 +43,17 @@ mod tests {
         let lines = BufReader::new(file).lines();
 
         let mut elves: Vec<Elf> = vec![];
-        let mut currentElf = Elf::new();
+        let mut current_elf = Elf::new();
 
         for line in lines  {
           if let Ok(line) = line {
             let calories = line.parse::<i32>();
 
             match calories {
-                Ok(cal) => currentElf.push(cal),
+                Ok(cal) => current_elf.push(cal),
                 Err(_) => {
-                  elves.push(currentElf);
-                  currentElf = Elf::new();
+                  elves.push(current_elf);
+                  current_elf = Elf::new();
                 },
             }
           }            
@@ -60,7 +61,23 @@ mod tests {
 
         let max = elves.iter().max();
         println!("{:?} = {}", max.unwrap(), max.unwrap().total());
+
+        assert_eq!(70116, max.unwrap().total());
       
+    }
+
+    #[test]
+    fn adventofcode1bis(){
+      let max_of_3 = include_str!("input.txt")
+        .lines()
+        .map(|s| s.parse::<u64>().ok())
+        .batching(|it| it.map_while(|e| e).sum1::<u64>())
+        .map(Reverse)
+        .k_smallest(3)
+        .map(|x| x.0)
+        .sum::<u64>();
+
+      assert_eq!(206582, max_of_3);
     }
 
     #[test]
@@ -70,17 +87,17 @@ mod tests {
       let lines = BufReader::new(file).lines();
 
       let mut elves: Vec<Elf> = vec![];
-      let mut currentElf = Elf::new();
+      let mut current_elf = Elf::new();
 
       for line in lines  {
         if let Ok(line) = line {
           let calories = line.parse::<i32>();
 
           match calories {
-              Ok(cal) => currentElf.push(cal),
+              Ok(cal) => current_elf.push(cal),
               Err(_) => {
-                elves.push(currentElf);
-                currentElf = Elf::new();
+                elves.push(current_elf);
+                current_elf = Elf::new();
               },
           }
         }            
@@ -91,6 +108,7 @@ mod tests {
       let max_elves = elves.iter().take(3);
       let max_of_3: i32 = max_elves.map(|e| e.total()).sum();
       println!("{:?}", max_of_3);
+      assert_eq!(206582, max_of_3);
     
   }
 }
